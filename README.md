@@ -1,16 +1,144 @@
 ---
-title: Jekyll LibDoc as remote theme
-description: Steps to follow to use quickly Jekyll LibDoc without tricky installation
+title: Archway
+description: The Cloud Native Application Gateway
 permalink: index.html
 ---
-[Jekyll LibDoc as remote theme on GitHub](https://olivier3lanc.github.io/LibDoc-remote-demo/)
 
-This repository contains only the configuration and the content of [Jekyll LibDoc theme](https://github.com/olivier3lanc/Jekyll-LibDoc) since version 1.0.1.
+Resolvez facilement vos problèmes d'architecture   
 
-*Available only on GitHub*, [remote theme feature](https://docs.github.com/en/pages/setting-up-a-github-pages-site-with-jekyll/adding-a-theme-to-your-github-pages-site-using-jekyll#adding-a-theme) is the most simple way to use LibDoc, it does not require any installation, just follow these few steps:
+Simplifiez la complexité du déploiement au sein de vos clusters lors de la phase de développement, du déploiement et de l'exploitation des applications.
 
-1. **Create a repository** <br>Just add a new repository on your GitHub account, this directory is an example.
-2. **Create a LibDoc config file** <br>Create and configure your LibDoc config file called [_config.yml](libdoc-config.html), required for GitHub Pages, do not forget to add/uncomment the following line:<br>`remote_theme: olivier3lanc/Jekyll-LibDoc`<br>[View a _config.yml example](https://github.com/olivier3lanc/LibDoc-remote-demo/blob/main/_config.yml)
-3. **Enable Github Pages** <br>To automatically compile your LibDoc project, just enable GitHub Pages at `https://github.com/[GH_USER_NAME]/[REPO_NAME]/settings/pages`. Each time you commit and push on the specified branch, [Github Pages](https://pages.github.com) builds and hosts your project on the URL `https://[GH_USER_NAME].github.io/[REPO_NAME]`.
 
-Your repository is now ready to be deployed as GitHub Pages website, all you have to do is adding your content! Learn more about [remote themes](https://github.blog/2017-11-29-use-any-theme-with-github-pages/).
+```mermaid!
+C4Context
+      title Architecture orienté microservices
+      Enterprise_Boundary(b0, "") {
+        Person(customerA, "Utilisateur A", "Un utilisateur de votre application")
+
+        System(ApplicationUI, "Application UI", "Your application provided by a microservice.")
+
+        Enterprise_Boundary(b1, "BankBoundary") {
+
+          SystemDb_Ext(SystemE, "Mainframe Banking System", "Stores all of the core banking information about customers, accounts, transactions, etc.")
+
+          System_Boundary(b2, "BankBoundary2") {
+            System(SystemA, "Banking System A")
+            System(SystemB, "Banking System B", "A system of the bank, with personal bank accounts. next line.")
+          }
+
+          System_Ext(SystemC, "E-mail system", "The internal Microsoft Exchange e-mail system.")
+          SystemDb(SystemD, "Banking System D Database", "A system of the bank, with personal bank accounts.")
+
+          Boundary(b3, "BankBoundary3", "boundary") {
+            SystemQueue(SystemF, "Banking System F Queue", "A system of the bank.")
+            SystemQueue_Ext(SystemG, "Banking System G Queue", "A system of the bank, with personal bank accounts.")
+          }
+        }
+      }
+
+      BiRel(customerA, ApplicationUI, "Uses")
+      BiRel(ApplicationUI, SystemE, "Uses")
+      Rel(ApplicationUI, SystemC, "Sends e-mails", "SMTP")
+      Rel(SystemC, customerA, "Sends e-mails to")
+
+      UpdateElementStyle(customerA, $fontColor="red", $bgColor="grey", $borderColor="red")
+      UpdateRelStyle(customerA, ApplicationUI, $textColor="blue", $lineColor="blue", $offsetX="5")
+      UpdateRelStyle(ApplicationUI, SystemE, $textColor="blue", $lineColor="blue", $offsetY="-10")
+      UpdateRelStyle(ApplicationUI, SystemC, $textColor="blue", $lineColor="blue", $offsetY="-40", $offsetX="-50")
+      UpdateRelStyle(SystemC, customerA, $textColor="red", $lineColor="red", $offsetX="-50", $offsetY="20")
+
+      UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")
+```
+
+# Goal
+
+Archway est née du constat que les api-gateway et reverse-proxy presents sur le marché étaient difficiles à mettre en oeuvre.
+
+Plus particulierement la gestion du routage se fait géneralement par configuration de fichiers souvent assez fastidieux qui impose le redémarrage du service.
+
+Certains imposent l'ajout de plugin pour la moindre feature. 
+
+La configuration d'un simple système d'authentification devient rapidement compliquée surtout durant la phase de développement où la géneration des certificats et gestion des DNS ne sont pas des points considérés par les développeurs.
+
+De plus ces mécanismes d'authentification ne couvrent pas la partie des autorisations simplement. L'ajout de fournisseur de service comme keycloak complexifie encore la mise en oeuvre.
+
+Aussi nous avions besoin d'une solution simple pour construire une application basé sur une architecture microservices.
+
+Archway se deploie naturellement dans un cluster docker.     
+Il permet de router vers des microservices à l'interieur ou à l'exterieur du cluster (ce qui est pratique lors de la phase de développement). 
+
+Archway est construit sur Spring cloud gateway. 
+
+Il fournit une interface ergonomique sur celui ci en ajoutant les fonctions indispensables pour construire une application basée sur une architecture microservice.
+
+
+
+
+# Technologies
+
+Archway utilise les technologies suivantes:
+
+ - Java 17
+ - spring boot 3
+ - spring cloud gateway
+ - mongodb 6
+ - angular 16+ / material
+ - fontawesome
+
+# Features
+
+Archway fournit la plupart des mécanismes proposés par spring cloud gateway.
+
+## Spring cloud gateway
+
+Spring cloud gateway introduit 2 concepts principaux
+
+ - Les prédicats: Permettent de définir la régle de routage pour un chemin (service) donnée.
+ - Les filters: Permettent de modifier les requêtes ou les rêponses 
+
+Avec Archway vous pourrez:
+
+ - Créer des routes
+ - Supprimer des routes
+ - Modifier des routes
+ - Activer des routes
+ - désactiver des routes
+
+Ceci dynamiquement, sans redémarrage.
+
+## Authentication/Autorisation
+
+Archway gére les utilisateurs de l'application. Il permet d'associer des profils aux utilisateurs, qui eux même contiennent des rôles.
+
+Archway gére donc les profils et les rôles de votre application.
+
+Archway introduit aussi une notion de groupes. Different des profils, permettant de faire un groupements des utilsateurs indépendament de leurs fonctions.   
+Par eemple cela pourrait être un groupement par région géographique permettant de restreindre l'accés aux données en fonction de la zone géograohique.
+
+Archway permet:
+
+- La gestion des utilisateurs
+- La gestion des profils
+- La gestion des groupes
+- La gestion des droits basée sur RBAC
+
+L'identifiant et les rôles de l'utilisateur sont transmit aux services cible de la gateway. Permettant de sécuriser les endpoints exposés par les microservices.
+
+- HTTP Header: username
+- HTTP Header: roles
+- HTTP Header: groups
+
+De plus Archway rajoute à spring cloud gateway un mecanisme simple de rôles pour sécuriser une route entière. 
+
+
+## Preferences utilisateurs
+
+Archway gére aussi certaines préférences utilisateurs, comme la langue par defaut. cette derniere est ajouté aux headers HTTP 'Accept-language' vous permettant de fournir des applications localisées.
+
+
+
+
+
+
+Archway nécessite juste d'une base de donnée mongodb pour stocker sa configuration, la gestion des utilisateurs
+
